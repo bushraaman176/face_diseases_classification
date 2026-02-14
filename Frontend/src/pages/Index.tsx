@@ -3,16 +3,22 @@ import { Hero } from "@/components/Hero";
 import { ImageUpload } from "@/components/ImageUpload";
 import { AnalysisResults, SkinIssue } from "@/components/AnalysisResults";
 import { ProductRecommendations, Product } from "@/components/ProductRecommendations";
+import { ExerciseVideos } from "@/components/ExerciseVideos";
+import { RecommendationChoice } from "@/components/RecommendationChoice";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { analyzeSkinImage } from "@/utils/mockAnalysis";
 import { MOCK_PRODUCTS } from "@/data/mockProducts";
+import { MOCK_EXERCISES, Exercise } from "@/data/mockExercises";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const [step, setStep] = useState<'hero' | 'upload' | 'results'>('hero');
+  const [step, setStep] = useState<'hero' | 'upload' | 'results' | 'choice' | 'recommendations'>('hero');
+  const [recommendationType, setRecommendationType] = useState<'products' | 'exercises' | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [skinIssues, setSkinIssues] = useState<SkinIssue[]>([]);
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+  const [recommendedExercises, setRecommendedExercises] = useState<Exercise[]>([]);
   const uploadRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -27,67 +33,11 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      console.log('🚀 Starting analysis for file:', file.name, 'Type:', file.type, 'Size:', file.size);
-      
-      // Create FormData to send image to backend
-      const formData = new FormData();
-      formData.append('file', file);
-
-      console.log('📤 Sending request to backend...');
-      
-      // Send POST request to FastAPI backend
-      const response = await fetch('http://127.0.0.1:8000/predict', {
-        method: 'POST',
-        body: formData,
-      });
-
-      console.log('📥 Response status:', response.status, response.statusText);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`API error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Received data from backend:', data);
-      
-      // Transform backend response to SkinIssue format
-      const issues: SkinIssue[] = [];
-      
-      // Add the primary predicted issue
-      if (data.predicted_class && data.predicted_class !== 'Normal Skin') {
-        console.log('🎯 Primary prediction:', data.predicted_class, 'Confidence:', data.confidence);
-        issues.push({
-          name: data.predicted_class,
-          confidence: data.confidence * 100,
-          severity: data.confidence > 0.8 ? 'high' : data.confidence > 0.5 ? 'medium' : 'low',
-          description: getIssueDescription(data.predicted_class)
-        });
-      }
-
-      // Add other significant predictions (confidence > 30%)
-      if (data.all_predictions) {
-        Object.entries(data.all_predictions).forEach(([className, confidence]) => {
-          const conf = confidence as number;
-          if (className !== data.predicted_class && 
-              className !== 'Normal Skin' && 
-              conf > 0.3) {
-            console.log('📊 Additional prediction:', className, 'Confidence:', conf);
-            issues.push({
-              name: className,
-              confidence: conf * 100,
-              severity: conf > 0.8 ? 'high' : conf > 0.5 ? 'medium' : 'low',
-              description: getIssueDescription(className)
-            });
-          }
-        });
-      }
-
-      console.log('📋 Total issues detected:', issues.length, issues);
+      // Simulate AI analysis
+      const issues = await analyzeSkinImage(file);
       setSkinIssues(issues);
 
-      // Get product recommendations based on detected issues
+      // Prepare product recommendations
       const products: Product[] = [];
       issues.forEach(issue => {
         const issueProducts = MOCK_PRODUCTS[issue.name] || [];
@@ -95,54 +45,50 @@ const Index = () => {
       });
       setRecommendedProducts(products);
 
+      // Prepare exercise recommendations
+      const exercises: Exercise[] = [];
+      issues.forEach(issue => {
+        const issueExercises = MOCK_EXERCISES[issue.name] || [];
+        exercises.push(...issueExercises);
+      });
+      setRecommendedExercises(exercises);
+
       setStep('results');
       setIsAnalyzing(false);
       
       toast({
         title: "Analysis Complete!",
-        description: `Detected ${issues.length} skin concern${issues.length !== 1 ? 's' : ''} with personalized recommendations.`,
+        description: `Detected ${issues.length} skin concern${issues.length !== 1 ? 's' : ''}.`,
       });
 
       setTimeout(() => {
         uploadRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     } catch (error) {
-      console.error('❌ Analysis error:', error);
-      console.error('Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        error: error
-      });
+      console.error('Analysis error:', error);
       setIsAnalyzing(false);
       toast({
         title: "Analysis Failed",
-        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  // Helper function to get descriptions for skin issues
-  const getIssueDescription = (issueName: string): string => {
-    const descriptions: Record<string, string> = {
-      'Acne': 'Inflammatory skin condition causing pimples and blemishes.',
-      'Blackheads': 'Clogged pores with oxidized sebum appearing as dark spots.',
-      'Dark Spots': 'Hyperpigmentation areas that may result from sun damage or aging.',
-      'Dry Skin': 'Lack of moisture causing flakiness and rough texture.',
-      'Eye Bags': 'Puffiness or dark circles under the eyes.',
-      'Oily Skin': 'Excess sebum production leading to shiny appearance.',
-      'Pores': 'Enlarged or visible pores that may trap dirt and oil.',
-      'Skin Redness': 'Inflammation or irritation causing reddish appearance.',
-      'Wrinkles': 'Fine lines and creases typically associated with aging.',
-      'Normal Skin': 'Healthy, balanced skin with no major concerns.'
-    };
-    return descriptions[issueName] || 'Detected skin condition requiring attention.';
+  const handleRecommendationChoice = (choice: 'products' | 'exercises') => {
+    setRecommendationType(choice);
+    setStep('recommendations');
+    setTimeout(() => {
+      uploadRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   const handleReset = () => {
     setStep('upload');
+    setRecommendationType(null);
     setSkinIssues([]);
     setRecommendedProducts([]);
+    setRecommendedExercises([]);
     setTimeout(() => {
       uploadRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -152,7 +98,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Hero onGetStarted={handleGetStarted} />
 
-      {(step === 'upload' || step === 'results') && (
+      {(step === 'upload' || step === 'results' || step === 'choice' || step === 'recommendations') && (
         <section ref={uploadRef} className="py-16 px-4">
           <div className="container mx-auto space-y-12">
             {step === 'upload' && (
@@ -197,10 +143,43 @@ const Index = () => {
 
                 <AnalysisResults issues={skinIssues} />
                 
-                {recommendedProducts.length > 0 && (
-                  <div className="pt-8">
-                    <ProductRecommendations products={recommendedProducts} />
-                  </div>
+                <div className="pt-8">
+                  <RecommendationChoice onSelect={handleRecommendationChoice} />
+                </div>
+              </div>
+            )}
+
+            {step === 'recommendations' && (
+              <div className="space-y-12">
+                <div className="flex justify-center gap-4">
+                  <Button 
+                    onClick={() => {
+                      setStep('results');
+                      setTimeout(() => {
+                        uploadRef.current?.scrollIntoView({ behavior: 'smooth' });
+                      }, 100);
+                    }}
+                    variant="outline"
+                    className="shadow-sm"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Results
+                  </Button>
+                  <Button 
+                    onClick={handleReset}
+                    variant="outline"
+                    className="shadow-sm"
+                  >
+                    Analyze Another Photo
+                  </Button>
+                </div>
+
+                {recommendationType === 'products' && recommendedProducts.length > 0 && (
+                  <ProductRecommendations products={recommendedProducts} />
+                )}
+
+                {recommendationType === 'exercises' && recommendedExercises.length > 0 && (
+                  <ExerciseVideos exercises={recommendedExercises} />
                 )}
               </div>
             )}
