@@ -7,8 +7,7 @@ import { ExerciseVideos } from "@/components/ExerciseVideos";
 import { RecommendationChoice } from "@/components/RecommendationChoice";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { analyzeSkinImage } from "@/utils/mockAnalysis";
-import { MOCK_PRODUCTS } from "@/data/mockProducts";
+import { analyzeSkinImageWithDatabase } from "@/utils/databaseAnalysis";
 import { MOCK_EXERCISES, Exercise } from "@/data/mockExercises";
 import { useToast } from "@/hooks/use-toast";
 
@@ -33,19 +32,12 @@ const Index = () => {
     setIsAnalyzing(true);
     
     try {
-      // Simulate AI analysis
-      const issues = await analyzeSkinImage(file);
+      // Analyze image using backend API (fetches from database)
+      const { issues, products } = await analyzeSkinImageWithDatabase(file);
       setSkinIssues(issues);
-
-      // Prepare product recommendations
-      const products: Product[] = [];
-      issues.forEach(issue => {
-        const issueProducts = MOCK_PRODUCTS[issue.name] || [];
-        products.push(...issueProducts);
-      });
       setRecommendedProducts(products);
 
-      // Prepare exercise recommendations
+      // Prepare exercise recommendations (still using mock data for now)
       const exercises: Exercise[] = [];
       issues.forEach(issue => {
         const issueExercises = MOCK_EXERCISES[issue.name] || [];
@@ -58,7 +50,7 @@ const Index = () => {
       
       toast({
         title: "Analysis Complete!",
-        description: `Detected ${issues.length} skin concern${issues.length !== 1 ? 's' : ''}.`,
+        description: `Detected ${issues.length} skin concern${issues.length !== 1 ? 's' : ''}. Found ${products.length} recommended products from database.`,
       });
 
       setTimeout(() => {
@@ -67,9 +59,10 @@ const Index = () => {
     } catch (error) {
       console.error('Analysis error:', error);
       setIsAnalyzing(false);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: "Analysis Failed",
-        description: "Something went wrong. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
