@@ -1,38 +1,24 @@
-# =========================================================
-# Skin Disease Classification API - Final Version
-# Model: EfficientNetB1 (Improved)
-# =========================================================
-
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import tensorflow as tf
-from tensorflow.keras.applications import efficientnet, mobilenet
 import numpy as np
 from PIL import Image
 import io
-import os
 from typing import Dict
-import warnings
 
-# Suppress TensorFlow warnings
-warnings.filterwarnings("ignore")
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
-# =========================================================
-# 🚀 Initialize FastAPI
-# =========================================================
-
+# ---------------------------------------------------------
+# 🚀 Initialize FastAPI App
+# ---------------------------------------------------------
 app = FastAPI(
     title="Skin Disease Classification API",
-    description="AI-powered skin disease detection using EfficientNetB1",
-    version="3.0.0"
+    description="API for predicting skin conditions from face images",
+    version="1.0.0"
 )
 
-# =========================================================
-# 🌐 CORS Configuration (for React frontend)
-# =========================================================
-
+# ---------------------------------------------------------
+# 🌐 CORS Middleware Configuration
+# ---------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -41,237 +27,171 @@ app.add_middleware(
         "http://localhost:5174",
         "http://127.0.0.1:5174",
         "http://localhost:8080",
-        "http://127.0.0.1:8080",
-    ],
+        "http://127.0.0.1:8080"
+    ],  # Your React frontend URLs
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allows all methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
 )
 
-# =========================================================
-# 📂 Model & Class Paths
-# =========================================================
-
-MODEL_PATH = "backend/skin_disease_classifier_improved_efficientnetb1.h5"
-FALLBACK_MODEL_PATH = "backend/best_model.h5"
-CLASS_NAMES_PATH = "backend/class_names_improved.txt"
-
+# ---------------------------------------------------------
+# 🧠 Load Trained Model
+# ---------------------------------------------------------
 model = None
-CLASS_NAMES = []
-LOADED_MODEL_PATH = None
-MODEL_PREPROCESSING = None  # Track which preprocessing to use
-
-CONFIDENCE_THRESHOLD = 0.60  # Minimum confidence required
-
-# =========================================================
-# 🧠 Load Model on Startup
-# =========================================================
 
 @app.on_event("startup")
 async def load_model():
-    global model, CLASS_NAMES, LOADED_MODEL_PATH, MODEL_PREPROCESSING
+    """Load the Keras model on application startup"""
+    global model
+    try:
+        model = tf.keras.models.load_model("backend/best_head_only.h5")
+        print("✅ Model loaded successfully!")
+    except Exception as e:
+        print(f"❌ Error loading model: {e}")
+        raise e
 
-    print("\n" + "=" * 60)
-    print("🚀 Loading Skin Disease Classification Model...")
-    print("=" * 60)
+# ---------------------------------------------------------
+# 🏷️ Class Names (Must match training order)
+# ---------------------------------------------------------
+CLASS_NAMES = [
+    'Acne', 'Blackheads', 'Dark Spots', 'Dry Skin',
+    'Eye Bags', 'Normal Skin', 'Oily Skin',
+    'Pores', 'Skin Redness', 'Wrinkles'
+]
 
-    # Custom Dense layer to handle quantization_config parameter from newer TensorFlow versions
-    class CustomDense(tf.keras.layers.Dense):
-        def __init__(self, *args, **kwargs):
-            kwargs.pop('quantization_config', None)  # Remove unknown parameter
-            super().__init__(*args, **kwargs)
-
-    # Try preferred model first
-    model_attempts = [
-        (MODEL_PATH, "efficientnet"),
-        (FALLBACK_MODEL_PATH, "mobilenet"),
-    ]
-
-    for model_to_load, model_type in model_attempts:
-        if not os.path.exists(model_to_load):
-            print(f"⚠️  {model_to_load} not found, trying next...")
-            continue
-
-        try:
-            # Try with custom Dense layer
-            model = tf.keras.models.load_model(
-                model_to_load, 
-                compile=False,
-                custom_objects={'Dense': CustomDense}
-            )
-            LOADED_MODEL_PATH = model_to_load
-            MODEL_PREPROCESSING = model_type  # Store preprocessing type
-            print(f"✅ Model Loaded: {model_to_load}")
-            print(f"✅ Preprocessing Type: {model_type.upper()}")
-            break
-        except Exception as e:
-            print(f"⚠️  Failed to load {model_to_load}: {str(e)[:100]}")
-            model = None
-            continue
-
-    if model is None:
-        raise RuntimeError("❌ Could not load any model. Check backend/ folder.")
-
-    model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4),
-        loss="categorical_crossentropy",
-        metrics=["accuracy"]
-    )
-
-    # Load class names
-    if not os.path.exists(CLASS_NAMES_PATH):
-        raise RuntimeError(f"❌ Class names file not found at {CLASS_NAMES_PATH}")
-
-    with open(CLASS_NAMES_PATH, "r") as f:
-        CLASS_NAMES = [line.strip() for line in f.readlines() if line.strip()]
-
-    print(f"✅ Classes Loaded: {len(CLASS_NAMES)}")
-
-    # Warmup (prevents slow first request)
-    dummy = np.zeros((1, 224, 224, 3))
-    if MODEL_PREPROCESSING == "efficientnet":
-        dummy = efficientnet.preprocess_input(dummy)
-    else:
-        dummy = mobilenet.preprocess_input(dummy)
-    model.predict(dummy)
-
-    print("✅ API READY")
-    print("=" * 60 + "\n")
-
-# =========================================================
+# ---------------------------------------------------------
 # 📦 Response Model
-# =========================================================
-
+# ---------------------------------------------------------
 class PredictionResponse(BaseModel):
     predicted_class: str
     confidence: float
     all_predictions: Dict[str, float]
 
-# =========================================================
-# 🖼 Image Preprocessing
-# =========================================================
-
+# ---------------------------------------------------------
+# 🖼️ Image Preprocessing Function
+# ---------------------------------------------------------
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
+    """
+    Preprocess uploaded image for model prediction
+    - Resize to (224, 224)
+    - Normalize pixel values to [0, 1]
+    - Add batch dimension
+    """
     try:
+        # Open image from bytes
         img = Image.open(io.BytesIO(image_bytes))
-
-        # Convert to RGB if needed
-        if img.mode != "RGB":
-            img = img.convert("RGB")
-
-        # Resize to 224x224
-        img = img.resize((224, 224), Image.LANCZOS)
-
-        img_array = np.array(img, dtype=np.float32)
+        
+        # Convert to RGB if needed (handles RGBA, grayscale, etc.)
+        if img.mode != 'RGB':
+            img = img.convert('RGB')
+        
+        # Resize to model input size
+        img = img.resize((224, 224))
+        
+        # Convert to numpy array and normalize
+        img_array = np.array(img, dtype=np.float32) / 255.0
+        
+        # Add batch dimension
         img_array = np.expand_dims(img_array, axis=0)
-
-        # Apply correct preprocessing based on loaded model
-        if MODEL_PREPROCESSING == "efficientnet":
-            img_array = efficientnet.preprocess_input(img_array)
-        elif MODEL_PREPROCESSING == "mobilenet":
-            img_array = mobilenet.preprocess_input(img_array)
-        else:
-            # Fallback to MobileNet if unknown
-            img_array = mobilenet.preprocess_input(img_array)
-
+        
         return img_array
-
+    
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid image format: {str(e)}")
 
-# =========================================================
+# ---------------------------------------------------------
 # 🔮 Prediction Endpoint
-# =========================================================
-
+# ---------------------------------------------------------
 @app.post("/predict", response_model=PredictionResponse)
 async def predict_skin_condition(file: UploadFile = File(...)):
-
+    """
+    Predict skin condition from uploaded image
+    
+    Args:
+        file: Uploaded image file (jpg, jpeg, png)
+    
+    Returns:
+        JSON with predicted class, confidence, and all predictions
+    """
+    # Validate model is loaded
     if model is None:
         raise HTTPException(status_code=503, detail="Model not loaded")
-
-    if not file.content_type.startswith("image/"):
+    
+    # Validate file type
+    if not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="File must be an image")
-
-    image_bytes = await file.read()
-
-    if not image_bytes:
-        raise HTTPException(status_code=400, detail="Empty image file")
-
-    # Limit file size to 5MB
-    if len(image_bytes) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="Image too large (Max 5MB)")
-
+    
     try:
-        processed_image = preprocess_image(image_bytes)
-
-        predictions = model.predict(processed_image, verbose=0)[0]
-
-        # Get top 2 predictions only
-        top_2_indices = np.argsort(predictions)[-2:][::-1]
+        # Read image bytes
+        image_bytes = await file.read()
         
+        # Preprocess image
+        processed_image = preprocess_image(image_bytes)
+        
+        # Make prediction
+        predictions = model.predict(processed_image, verbose=0)[0]
+        
+        # Get predicted class (highest probability)
+        predicted_idx = np.argmax(predictions)
+        predicted_class = CLASS_NAMES[predicted_idx]
+        confidence = float(predictions[predicted_idx])
+        
+        # Create dictionary of all predictions
         all_predictions = {
-            CLASS_NAMES[i]: float(predictions[i])
-            for i in top_2_indices
+            class_name: float(prob)
+            for class_name, prob in zip(CLASS_NAMES, predictions)
         }
-
-        # Get top prediction
-        predicted_class = CLASS_NAMES[top_2_indices[0]]
-        confidence = float(predictions[top_2_indices[0]])
-
-        # Apply confidence threshold
-        if confidence < CONFIDENCE_THRESHOLD:
-            predicted_class = "Uncertain - Please upload a clearer image"
-
+        
+        # Sort predictions by confidence (descending)
+        all_predictions = dict(sorted(
+            all_predictions.items(),
+            key=lambda x: x[1],
+            reverse=True
+        ))
+        
         return PredictionResponse(
             predicted_class=predicted_class,
             confidence=confidence,
             all_predictions=all_predictions
         )
-
+    
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"❌ Prediction error: {e}")
-        raise HTTPException(status_code=500, detail="Prediction failed")
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
-# =========================================================
-# 🏥 Health Check Endpoints
-# =========================================================
-
+# ---------------------------------------------------------
+# 🏥 Health Check Endpoint
+# ---------------------------------------------------------
 @app.get("/")
 async def root():
+    """Root endpoint - API health check"""
     return {
-        "status": "API Running",
+        "message": "Skin Disease Classification API is running",
+        "status": "healthy",
         "model_loaded": model is not None,
-        "num_classes": len(CLASS_NAMES),
-        "model_type": f"{MODEL_PREPROCESSING.upper()} Architecture" if MODEL_PREPROCESSING else "Unknown"
+        "endpoints": {
+            "predict": "/predict (POST)",
+            "docs": "/docs",
+            "health": "/health"
+        }
     }
 
 @app.get("/health")
-async def health():
+async def health_check():
+    """Detailed health check"""
     return {
         "status": "healthy" if model is not None else "unhealthy",
         "model_loaded": model is not None,
-        "model_type": f"{MODEL_PREPROCESSING.upper()} Architecture" if MODEL_PREPROCESSING else "Unknown",
-        "model_path": LOADED_MODEL_PATH,
-        "num_classes": len(CLASS_NAMES),
-        "class_names": CLASS_NAMES
+        "classes": CLASS_NAMES,
+        "num_classes": len(CLASS_NAMES)
     }
 
-# =========================================================
-# 📋 Startup Info
-# =========================================================
-
-print("""
-╔════════════════════════════════════════════════════════╗
-║   Skin Disease Classification API - FINAL VERSION     ║
-║   Model: EfficientNetB1 (Improved Fine-Tuned Model)   ║
-╚════════════════════════════════════════════════════════╝
-""")
-
-print("""
-🚀 To run:
-   pip install fastapi uvicorn tensorflow pillow python-multipart
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
-
-📄 Docs:
-   http://localhost:8000/docs
-""")
+# ---------------------------------------------------------
+# 📋 Run Instructions
+# ---------------------------------------------------------
+# To run this API:
+# 1. Install dependencies: pip install fastapi uvicorn tensorflow pillow python-multipart
+# 2. Run server: uvicorn main:app --reload
+# 3. Access API docs: http://localhost:8000/docs
+# 4. Test prediction: Upload image via /predict endpoint
