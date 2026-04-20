@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import { Upload, Sparkles, Droplets, ShieldCheck } from "lucide-react";
 import { Button } from "./ui/button";
 import acneImg from "@/assets/acne.png";
-import heroImg from "@/assets/hero-skincare.jpg";
+import heroImg from "@/assets/dry.png";
+import wrinklesImg from "@/assets/wrinkles.png";
 
 const images = [
   acneImg,
   heroImg,
-  acneImg,
+  wrinklesImg,
 ];
 
 export const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
