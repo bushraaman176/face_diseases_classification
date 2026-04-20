@@ -1,88 +1,97 @@
-import { Upload } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Upload, Sparkles, Droplets, ShieldCheck } from "lucide-react";
 import { Button } from "./ui/button";
-import heroImage from "@/assets/hero-skincare.jpg";
+import acneImg from "@/assets/acne.png";
+import heroImg from "@/assets/hero-skincare.jpg";
 
-interface HeroProps {
-  onGetStarted: () => void;
-}
+const images = [
+  acneImg,
+  heroImg,
+  acneImg,
+];
 
-export const Hero = ({ onGetStarted }: HeroProps) => {
+export const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % images.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-      <div 
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: `linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--accent)) 100%)`,
-        }}
-      />
-      
-      <div className="container mx-auto px-4 py-16 relative z-10">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6 animate-in fade-in slide-in-from-left duration-700">
-            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full">
-              <span className="text-sm font-medium text-primary">AI-Powered Skincare Analysis</span>
-            </div>
-            
-            <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-              Your Personalized
-              <span className="block bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Skincare Advisor
-              </span>
-            </h1>
-            
-            <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">
-              Upload your photo and let our advanced AI analyze your skin to detect issues 
-              and recommend the perfect products tailored just for you.
-            </p>
-            
-            <div className="flex gap-4 pt-4">
-              <Button 
-                onClick={onGetStarted}
-                size="lg" 
-                className="group shadow-lg hover:shadow-xl transition-all"
-              >
-                <Upload className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                Get Started
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="shadow-sm hover:shadow-md transition-all"
-              >
-                Learn More
-              </Button>
-            </div>
-            
-            <div className="flex items-center gap-8 pt-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span>AI-Powered</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-                <span>Instant Results</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                <span>Personalized</span>
-              </div>
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-background to-accent">
+      <div className="container mx-auto px-4 py-16 grid md:grid-cols-2 items-center gap-10">
+
+        {/* LEFT CONTENT */}
+        <div className="space-y-6">
+          <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium border border-primary/20">
+            AI-Powered Skin Analysis
+          </span>
+
+          <h1 className="text-5xl font-bold leading-tight">
+            Your Smart
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              Skincare Advisor
+            </span>
+          </h1>
+
+          <p className="text-muted-foreground text-lg">
+            Upload your face image and get instant AI-powered skin analysis with personalized recommendations.
+          </p>
+
+          <div className="flex gap-4">
+            <Button onClick={onGetStarted} className="flex gap-2">
+              <Upload size={18} /> Get Started
+            </Button>
+            <Button variant="outline">Learn More</Button>
+          </div>
+        </div>
+
+        {/* RIGHT PHONE MOCKUP */}
+        <div className="relative flex justify-center items-center">
+
+          {/* Floating Cards */}
+          <div className="absolute -left-6 top-10 bg-card shadow-lg p-3 rounded-xl w-40 animate-bounce border border-primary/10">
+            <div className="flex items-center gap-2 text-sm">
+              <Sparkles className="text-primary" size={16} />
+              AI detects acne instantly
             </div>
           </div>
-          
-          <div className="relative animate-in fade-in slide-in-from-right duration-700 delay-200">
-            <div 
-              className="rounded-3xl overflow-hidden shadow-2xl"
-              style={{ boxShadow: 'var(--shadow-strong)' }}
-            >
-              <img 
-                src={heroImage} 
-                alt="Skincare products and spa atmosphere"
-                className="w-full h-auto object-cover"
+
+          <div className="absolute -right-6 bottom-10 bg-card shadow-lg p-3 rounded-xl w-44 animate-pulse border border-primary/10">
+            <div className="flex items-center gap-2 text-sm">
+              <Droplets className="text-primary" size={16} />
+              Personalized skincare tips
+            </div>
+          </div>
+
+          <div className="absolute top-0 right-10 bg-card shadow-lg p-3 rounded-xl w-40 animate-bounce border border-primary/10">
+            <div className="flex items-center gap-2 text-sm">
+              <ShieldCheck className="text-secondary" size={16} />
+              Dermatology-level AI
+            </div>
+          </div>
+
+          {/* PHONE */}
+          <div className="relative w-[280px] h-[560px] bg-black rounded-[40px] p-3 shadow-2xl">
+
+            {/* Screen */}
+            <div className="w-full h-full bg-white rounded-[32px] overflow-hidden relative">
+
+              <img
+                src={images[index]}
+                alt="skin analysis"
+                className="w-full h-full object-cover transition-all duration-700 ease-in-out"
               />
+
+              {/* Glow overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
             </div>
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-secondary to-secondary/50 rounded-full blur-3xl opacity-60" />
-            <div className="absolute -top-6 -left-6 w-32 h-32 bg-gradient-to-br from-primary to-primary/50 rounded-full blur-3xl opacity-60" />
           </div>
+
         </div>
       </div>
     </section>
