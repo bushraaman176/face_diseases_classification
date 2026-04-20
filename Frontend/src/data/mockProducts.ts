@@ -49,7 +49,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "oily-2",
       name: "Serum",
       rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1571875257727-256c39da42af?w=400&h=400&fit=crop",
+      imageUrl: "https://www.freepik.com/free-photo/young-woman-with-facial-mask-beauty-spa-cosmetology_9028315.htm#fromView=keyword&page=1&position=27&uuid=24cb7682-0435-4fea-94c7-fb64cfe77efd&query=Facial+mask",
 
       description: "Contains Niacinamide, Retinol, and Green Tea Extract to reduce shine and balance sebum.",
       targetIssue: "Oily Skin"
@@ -112,7 +112,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "wrinkle-3",
       name: "Face Mask",
       rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop",
+      imageUrl: "https://www.freepik.com/free-photo/young-woman-with-facial-mask-beauty-spa-cosmetology_9028315.htm#fromView=keyword&page=1&position=27&uuid=24cb7682-0435-4fea-94c7-fb64cfe77efd&query=Facial+mask",
       description: "Collagen and Vitamin C infused mask to brighten and firm aging skin.",
       targetIssue: "Wrinkles"
     },
