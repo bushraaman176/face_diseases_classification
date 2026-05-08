@@ -15,7 +15,7 @@ export const MOCK_EXERCISES: Record<string, Exercise[]> = {
       title: "Face Yoga for Clear Skin",
       description: "Gentle facial exercises to improve blood circulation and reduce acne inflammation",
       duration: "10 min",
-      videoUrl: "https://www.youtube.com/embed/VEtysZXv0yk",
+      videoUrl: "https://youtu.be/UnLCk69YDuw?si=06ieKPlwEsLg4PXY",
       targetIssue: "Acne",
       thumbnail: "https://img.youtube.com/vi/VEtysZXv0yk/maxresdefault.jpg"
     },

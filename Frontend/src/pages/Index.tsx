@@ -3,12 +3,10 @@ import { Hero } from "@/components/Hero";
 import { ImageUpload } from "@/components/ImageUpload";
 import { AnalysisResults, SkinIssue } from "@/components/AnalysisResults";
 import { ProductRecommendations, Product } from "@/components/ProductRecommendations";
-import { ExerciseVideos } from "@/components/ExerciseVideos";
 import { RecommendationChoice } from "@/components/RecommendationChoice";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { analyzeSkinImageWithDatabase } from "@/utils/databaseAnalysis";
-import { MOCK_EXERCISES, Exercise } from "@/data/mockExercises";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
@@ -17,7 +15,6 @@ const Index = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [skinIssues, setSkinIssues] = useState<SkinIssue[]>([]);
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
-  const [recommendedExercises, setRecommendedExercises] = useState<Exercise[]>([]);
   const uploadRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -37,20 +34,12 @@ const Index = () => {
       setSkinIssues(issues);
       setRecommendedProducts(products);
 
-      // Prepare exercise recommendations (still using mock data for now)
-      const exercises: Exercise[] = [];
-      issues.forEach(issue => {
-        const issueExercises = MOCK_EXERCISES[issue.name] || [];
-        exercises.push(...issueExercises);
-      });
-      setRecommendedExercises(exercises);
-
       setStep('results');
       setIsAnalyzing(false);
       
       toast({
         title: "Analysis Complete!",
-        description: `Detected ${issues.length} skin concern${issues.length !== 1 ? 's' : ''}. Found ${products.length} recommended products from database.`,
+        description: `Detected ${issues.length} skin concern${issues.length !== 1 ? 's' : ''}. Found ${products.length} recommended products.`,
       });
 
       setTimeout(() => {
@@ -81,7 +70,6 @@ const Index = () => {
     setRecommendationType(null);
     setSkinIssues([]);
     setRecommendedProducts([]);
-    setRecommendedExercises([]);
     setTimeout(() => {
       uploadRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
@@ -169,10 +157,6 @@ const Index = () => {
 
                 {recommendationType === 'products' && recommendedProducts.length > 0 && (
                   <ProductRecommendations products={recommendedProducts} />
-                )}
-
-                {recommendationType === 'exercises' && recommendedExercises.length > 0 && (
-                  <ExerciseVideos exercises={recommendedExercises} />
                 )}
               </div>
             )}
