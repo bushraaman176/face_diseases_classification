@@ -3,8 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import acneImg from "@/assets/acne.png";
-import heroImg from "@/assets/hero-skincare.jpg";
+import heroImg from "@/assets/blackhead.png";
 import wrinklesImg from "@/assets/wrinkles.png";
+import dry from "@/assets/dry.png";
+import oily from "@/assets/oily.png";
+import pores from "@/assets/pores.png";
+import redness from "@/assets/redness.png";
+import darkspots from "@/assets/darkspots.png";
+import eyebags from "@/assets/eyebags.png";
+import normal from "@/assets/normal.png";
 
 const conditionMap: Record<string, string> = {
   "Acne": "acne",
@@ -32,49 +39,49 @@ const skinConditions = [
     name: "Blackheads",
     description: "Open comedones filled with oxidized sebum appearing as dark spots on skin",
     symptoms: "Dark spots on nose and chin, enlarged pores",
-    image: acneImg,
+    image: heroImg,
   },
   {
     id: 3,
     name: "Dark Spots",
     description: "Hyperpigmentation patches that appear darker than surrounding skin",
     symptoms: "Brown or black patches, sun damage related",
-    image: heroImg,
+    image: darkspots,
   },
   {
     id: 4,
     name: "Dry Skin",
     description: "Skin lacking moisture with tight, flaky, and uncomfortable feeling",
     symptoms: "Flaking, tightness, rough texture, itching",
-    image: heroImg,
+    image: dry,
   },
   {
     id: 5,
     name: "Enlarged Pores",
     description: "Visibly large skin pores that trap dirt and oil easily",
     symptoms: "Visible pores, congestion, oily appearance",
-    image: acneImg,
+    image: pores,
   },
   {
     id: 6,
     name: "Eye Bags",
     description: "Puffiness and discoloration under the eyes indicating fatigue or aging",
     symptoms: "Swelling, dark circles, puffiness under eyes",
-    image: heroImg,
+    image: eyebags,
   },
   {
     id: 7,
     name: "Oily Skin",
     description: "Excess sebum production causing shine and potential breakouts",
     symptoms: "Shiny appearance, greasy texture, prone to acne",
-    image: acneImg,
+    image: oily,
   },
   {
     id: 8,
     name: "Skin Redness",
     description: "Inflammation or irritation causing flushed or red appearance",
     symptoms: "Redness, irritation, sensitivity, flushing",
-    image: heroImg,
+    image: redness,
   },
   {
     id: 9,
@@ -88,7 +95,7 @@ const skinConditions = [
     name: "Normal Skin",
     description: "Balanced skin with good hydration, elasticity, and minimal issues",
     symptoms: "Clear complexion, balanced oil production",
-    image: heroImg,
+    image: normal,
   },
 ];
 
