@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 import tensorflow as tf
 import numpy as np
 from PIL import Image
@@ -8,6 +8,9 @@ import io
 from typing import Dict, List
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import bcrypt
+from datetime import datetime
+from bson import ObjectId
 
 # ---------------------------------------------------------
 # 🚀 Initialize FastAPI App
@@ -36,6 +39,7 @@ MONGO_URI = "mongodb://127.0.0.1:27017"
 client = AsyncIOMotorClient(MONGO_URI)
 db = client["skincareDB"]
 product_collection = db["products"]
+user_collection = db["users"]
 
 # Connection status tracker
 db_connected = False
@@ -96,6 +100,22 @@ class PredictionResponse(BaseModel):
     confidence: float
     all_predictions: Dict[str, float]
     recommended_products: List[ProductResponse]
+
+class SignupRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class AuthResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    created_at: str
+    message: str
 
 # ---------------------------------------------------------
 # 🖼️ Image Preprocessing
@@ -259,3 +279,76 @@ async def database_status():
                 "4. Run: mongod (on Windows) or brew services start mongodb-community (on Mac)"
             ]
         }
+
+# ---------------------------------------------------------
+# 🔐 Authentication Endpoints
+# ---------------------------------------------------------
+
+def hash_password(password: str) -> str:
+    """Hash password using bcrypt"""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+def verify_password(password: str, hashed_password: str) -> bool:
+    """Verify password against hash"""
+    return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
+
+@app.post("/signup", response_model=AuthResponse)
+async def signup(request: SignupRequest):
+    """Register a new user"""
+    try:
+        # Check if user already exists
+        existing_user = await user_collection.find_one({"email": request.email})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        
+        # Hash password
+        hashed_password = hash_password(request.password)
+        
+        # Create user document
+        user_doc = {
+            "email": request.email,
+            "password": hashed_password,
+            "name": request.name,
+            "created_at": datetime.now().isoformat()
+        }
+        
+        # Insert user
+        result = await user_collection.insert_one(user_doc)
+        
+        return AuthResponse(
+            id=str(result.inserted_id),
+            email=request.email,
+            name=request.name,
+            created_at=user_doc["created_at"],
+            message="User registered successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Signup error: {str(e)}")
+
+@app.post("/login", response_model=AuthResponse)
+async def login(request: LoginRequest):
+    """Login user"""
+    try:
+        # Find user by email
+        user = await user_collection.find_one({"email": request.email})
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        # Verify password
+        if not verify_password(request.password, user["password"]):
+            raise HTTPException(status_code=401, detail="Invalid email or password")
+        
+        return AuthResponse(
+            id=str(user["_id"]),
+            email=user["email"],
+            name=user["name"],
+            created_at=user["created_at"],
+            message="Login successful"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Login error: {str(e)}")

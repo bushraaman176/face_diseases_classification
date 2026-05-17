@@ -1,14 +1,36 @@
-import { useState } from 'react';
-import { Menu, X, Home, BookOpen, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, X, Home, BookOpen, Mail, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+
+interface UserData {
+  id: string;
+  email: string;
+  name: string;
+}
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<UserData | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUser(null);
+    navigate('/login');
+    setIsMenuOpen(false);
+  };
 
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Skin Guide', href: '/guide', icon: BookOpen },
-    // { label: 'Contact Us', href: '/contact', icon: Mail },
   ];
 
   return (
@@ -54,12 +76,28 @@ export function Navigation() {
 
           {/* Desktop CTA Button */}
           <div className="hidden md:flex items-center gap-4">
-            <Button
-              onClick={() => window.location.href = '/'}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-200 rounded-full px-6"
-            >
-              Get Started
-            </Button>
+            {user ? (
+              <>
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="w-4 h-4" />
+                  <span>{user.name}</span>
+                </div>
+                <Button
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white shadow-soft hover:shadow-medium transition-all duration-200 rounded-full px-6 flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => navigate('/login')}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-200 rounded-full px-6"
+              >
+                Login
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,15 +135,31 @@ export function Navigation() {
                 );
               })}
               <div className="px-3 py-2">
-                <Button
-                  onClick={() => {
-                    window.location.href = '/';
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-soft rounded-full"
-                >
-                  Get Started
-                </Button>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-2 text-sm mb-2 px-3 py-2">
+                      <User className="w-4 h-4" />
+                      <span>{user.name}</span>
+                    </div>
+                    <Button
+                      onClick={handleLogout}
+                      className="w-full bg-red-500 hover:bg-red-600 text-white shadow-soft rounded-full flex items-center justify-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() => {
+                      navigate('/login');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-soft rounded-full"
+                  >
+                    Login
+                  </Button>
+                )}
               </div>
             </div>
           </div>
