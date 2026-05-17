@@ -143,7 +143,7 @@ export function Navigation() {
                     </div>
                     <Button
                       onClick={handleLogout}
-                      className="w-full bg-red-500 hover:bg-red-600 text-white shadow-soft rounded-full flex items-center justify-center gap-2"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-soft hover:shadow-medium transition-all duration-200 rounded-full px-6 flex items-center gap-2"
                     >
                       <LogOut className="w-4 h-4" />
                       Logout

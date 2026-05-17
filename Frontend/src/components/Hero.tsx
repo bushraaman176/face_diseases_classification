@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Upload, Sparkles, Droplets, ShieldCheck } from "lucide-react";
 import { Button } from "./ui/button";
+import { useNavigate } from "react-router-dom";
 import acneImg from "@/assets/acne.png";
 import heroImg from "@/assets/dry.png";
 import wrinklesImg from "@/assets/wrinkles.png";
@@ -13,6 +14,8 @@ const images = [
 
 export const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
   const [index, setIndex] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -21,6 +24,19 @@ export const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    setIsLoggedIn(!!user);
+  }, []);
+
+  const handleGetStartedClick = () => {
+    if (!isLoggedIn) {
+      navigate('/login');
+    } else {
+      onGetStarted();
+    }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-background to-accent">
@@ -44,7 +60,7 @@ export const Hero = ({ onGetStarted }: { onGetStarted: () => void }) => {
           </p>
 
           <div className="flex gap-4">
-            <Button onClick={onGetStarted} className="flex gap-2">
+            <Button onClick={handleGetStartedClick} className="flex gap-2">
               <Upload size={18} /> Get Started
             </Button>
             <Button variant="outline">Learn More</Button>
