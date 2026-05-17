@@ -87,14 +87,20 @@ export const analyzeSkinImageWithDatabase = async (
     };
 
     // Convert database products to Product format
-    const products: Product[] = data.recommended_products.map((prod, idx) => ({
-      id: `prod-${idx}`,
-      name: prod.name,
-      rating: 4.5, // Default rating if not in database
-      imageUrl: PRODUCT_IMAGES[prod.category] || PRODUCT_IMAGES['Serum'],
-      description: `Product for ${prod.skinType}. Ingredients: ${prod.ingredients.join(', ')}`,
-      targetIssue: prod.skinType
-    }));
+    const allowedCategories = ['serum', 'cream', 'moisturizer'];
+
+    const products: Product[] = data.recommended_products
+  .filter(prod =>
+    allowedCategories.includes(prod.category?.toLowerCase().trim())
+  )
+  .map((prod, idx) => ({
+    id: `prod-${idx}`,
+    name: prod.name,
+    rating: 4.5,
+    imageUrl: PRODUCT_IMAGES[prod.category] || PRODUCT_IMAGES['Serum'],
+    description: `Product for ${prod.skinType}. Ingredients: ${prod.ingredients.join(', ')}`,
+    targetIssue: prod.skinType
+  }));
 
     return {
       issues: [issue],

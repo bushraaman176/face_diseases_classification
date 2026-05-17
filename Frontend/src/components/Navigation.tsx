@@ -8,7 +8,7 @@ export function Navigation() {
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Skin Guide', href: '/guide', icon: BookOpen },
-    { label: 'Contact Us', href: '/contact', icon: Mail },
+    // { label: 'Contact Us', href: '/contact', icon: Mail },
   ];
 
   return (
