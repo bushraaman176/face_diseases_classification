@@ -2,7 +2,15 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle, AlertCircle, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import acneImg from "@/assets/acne.png";
-import heroImg from "@/assets/hero-skincare.jpg";
+import blackhead from "@/assets/blackhead.png";
+import wrinklesImg from "@/assets/wrinkles.png";
+import dry from "@/assets/dry.png";
+import oily from "@/assets/oily.png";
+import pores from "@/assets/pores.png";
+import redness from "@/assets/redness.png";
+import darkspots from "@/assets/darkspots.png";
+import eyebags from "@/assets/eyebags.png";
+import normal from "@/assets/normal.png";
 
 const conditionDetails: Record<string, any> = {
   acne: {
@@ -68,7 +76,7 @@ const conditionDetails: Record<string, any> = {
   blackheads: {
     id: 2,
     name: "Blackheads",
-    image: acneImg,
+    image: blackhead,
     overview: "Blackheads (open comedones) form when pores become clogged with sebum and dead skin cells. The dark appearance is caused by oxidation, not dirt.",
     
     causes: [
@@ -123,7 +131,7 @@ const conditionDetails: Record<string, any> = {
   darkspots: {
     id: 3,
     name: "Dark Spots",
-    image: heroImg,
+    image: darkspots,
     overview: "Dark spots (hyperpigmentation) are darker patches on the skin caused by excess melanin production. Common after sun exposure or skin inflammation.",
     
     causes: [
@@ -174,7 +182,7 @@ const conditionDetails: Record<string, any> = {
   dryskin: {
     id: 4,
     name: "Dry Skin",
-    image: heroImg,
+    image: dry,
     overview: "Dry skin lacks sufficient moisture and natural oils, causing tightness, flaking, and discomfort.",
     
     causes: [
@@ -231,7 +239,7 @@ const conditionDetails: Record<string, any> = {
   enlargedpores: {
     id: 5,
     name: "Enlarged Pores",
-    image: acneImg,
+    image: pores,
     overview: "Enlarged pores appear as visible openings on the skin surface, more noticeable on the face.",
     
     causes: [
@@ -282,7 +290,7 @@ const conditionDetails: Record<string, any> = {
   eyebags: {
     id: 6,
     name: "Eye Bags",
-    image: heroImg,
+    image: eyebags,
     overview: "Eye bags are puffiness under the eyes, often with dark discoloration, indicating fatigue or aging.",
     
     causes: [
@@ -336,7 +344,7 @@ const conditionDetails: Record<string, any> = {
   oilyskin: {
     id: 7,
     name: "Oily Skin",
-    image: acneImg,
+    image: oily,
     overview: "Oily skin results from excess sebum production, giving a shiny, greasy appearance.",
     
     causes: [
@@ -390,7 +398,7 @@ const conditionDetails: Record<string, any> = {
   skinredness: {
     id: 8,
     name: "Skin Redness",
-    image: heroImg,
+    image: redness,
     overview: "Skin redness is inflammation or irritation causing flushed appearance, often due to sensitivity or rosacea.",
     
     causes: [
@@ -448,7 +456,7 @@ const conditionDetails: Record<string, any> = {
   wrinkles: {
     id: 9,
     name: "Wrinkles",
-    image: acneImg,
+    image: wrinklesImg,
     overview: "Wrinkles are fine lines and creases that form as skin loses collagen and elasticity with age.",
     
     causes: [
@@ -504,7 +512,7 @@ const conditionDetails: Record<string, any> = {
   normalskin: {
     id: 10,
     name: "Normal Skin",
-    image: heroImg,
+    image: normal,
     overview: "Normal skin is balanced with good hydration, elasticity, and minimal issues. It maintains a healthy appearance.",
     
     causes: [

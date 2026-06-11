@@ -82,6 +82,7 @@ export const ImageUpload = ({ onImageSelected, isAnalyzing }: ImageUploadProps) 
               <h3 className="text-xl font-semibold">Upload Your Photo</h3>
               <p className="text-muted-foreground max-w-md mx-auto">
                 Take a clear selfie in good lighting for the most accurate skin analysis
+                They analyze only human face not the other things
               </p>
             </div>
             
