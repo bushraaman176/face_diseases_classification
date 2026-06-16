@@ -1,4 +1,7 @@
 import { Product } from "@/components/ProductRecommendations";
+import serumImg from "@/assets/serum.jpg";
+import moisturizerImg from "@/assets/moisturizer.jpg";
+import facewashImg from "@/assets/facewash.jpg";
 
 export const MOCK_PRODUCTS: Record<string, Product[]> = {
   "Acne": [
@@ -6,14 +9,14 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "acne-1",
       name: "Facewash",
       rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=400&fit=crop",
+      imageUrl: facewashImg,
       description: "Contains Salicylic Acid, Tea Tree Oil, Zinc PCA, Witch Hazel — helps deeply cleanse pores and reduce acne.",
       targetIssue: "Acne"
     },
     {
       id: "acne-2",
       name: "Serum",
-      imageUrl: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop",
+      imageUrl: serumImg,
       rating: 4.7,
       description: "Formulated with Retinol, Niacinamide, Azelaic Acid, and Green Tea Extract to target acne-causing bacteria.",
       targetIssue: "Acne"
@@ -21,7 +24,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
     {
       id: "acne-3",
       name: "Cream",
-      imageUrl: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=400&h=400&fit=crop",
+      imageUrl: moisturizerImg,
       rating: 4.7,
       description: "Includes Benzoyl Peroxide, Sulfur, Lactic Acid, and Allantoin to heal and calm inflamed skin.",
       targetIssue: "Acne"
@@ -41,7 +44,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "oily-1",
       name: "Facewash",
       rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1556228852-80f3f6f8b8a0?w=400&h=400&fit=crop",
+      imageUrl: facewashImg,
       description: "Cleansing gel with Salicylic Acid, Tea Tree Oil, Niacinamide, and Zinc PCA to remove excess oil.",
       targetIssue: "Oily Skin"
     },
@@ -49,8 +52,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "oily-2",
       name: "Serum",
       rating: 4.7,
-      imageUrl: "https://www.freepik.com/free-photo/young-woman-with-facial-mask-beauty-spa-cosmetology_9028315.htm#fromView=keyword&page=1&position=27&uuid=24cb7682-0435-4fea-94c7-fb64cfe77efd&query=Facial+mask",
-
+      imageUrl: serumImg, 
       description: "Contains Niacinamide, Retinol, and Green Tea Extract to reduce shine and balance sebum.",
       targetIssue: "Oily Skin"
     },
@@ -69,7 +71,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "dry-1",
       name: "Facewash",
       rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1570194065650-d99fb4b7b527?w=400&h=400&fit=crop",
+      imageUrl: facewashImg,
       description: "Hydrating wash with Hyaluronic Acid, Glycerin, Ceramides, and Aloe Vera to retain moisture.",
       targetIssue: "Dry Skin"
     },
@@ -77,7 +79,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "dry-2",
       name: "Cream",
       rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400&h=400&fit=crop",
+      imageUrl: moisturizerImg,
       description: "Deeply nourishing Shea Butter and Ceramide cream that locks in moisture and repairs skin.",
       targetIssue: "Dry Skin"
     },
@@ -85,7 +87,7 @@ export const MOCK_PRODUCTS: Record<string, Product[]> = {
       id: "dry-3",
       name: "Serum",
       rating: 4.7,
-      imageUrl: "https://images.unsplash.com/photo-1617897903246-719242758050?w=400&h=400&fit=crop",
+      imageUrl: serumImg,
       description: "Hyaluronic Acid and Peptides boost hydration and improve elasticity.",
       targetIssue: "Dry Skin"
     },

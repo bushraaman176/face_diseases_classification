@@ -1,5 +1,8 @@
 import { SkinIssue } from "@/components/AnalysisResults";
 import { Product } from "@/components/ProductRecommendations";
+import serumImg from "@/assets/serum.jpg";
+import moisturizerImg from "@/assets/moisturizer.jpg";
+import facewashImg from "@/assets/cream.jpg";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -27,13 +30,11 @@ const CONDITION_DESCRIPTIONS: Record<string, string> = {
 };
 
 
-// KEEP YOUR EXISTING PRODUCT_IMAGES OBJECT HERE
-// Do not change it
-
 const PRODUCT_IMAGES: Record<string, string> = {
-  // paste your existing PRODUCT_IMAGES here
+  serum: serumImg,
+  cream: facewashImg,
+  moisturizer: moisturizerImg,
 };
-
 
 interface APIResponse {
   predicted_class: string;
@@ -125,8 +126,8 @@ export const analyzeSkinImageWithDatabase = async (
           rating: 4.5,
 
           imageUrl:
-            PRODUCT_IMAGES[prod.category] ||
-            PRODUCT_IMAGES["Serum"],
+            PRODUCT_IMAGES[(prod.category || "").toLowerCase().trim()] ||
+            PRODUCT_IMAGES["serum"],
 
 
           description:
