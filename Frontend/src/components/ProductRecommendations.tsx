@@ -1,6 +1,8 @@
 import { ShoppingCart, Star } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
+import { useState } from "react";
+import { useCart } from "@/contexts/CartContext";
 
 export interface Product {
   id: string;
@@ -17,6 +19,22 @@ interface ProductRecommendationsProps {
 }
 
 export const ProductRecommendations = ({ products }: ProductRecommendationsProps) => {
+  const { addToCart, items: cartItems } = useCart();
+  const [justAdded, setJustAdded] = useState<string | null>(null);
+
+  const handleAddToCart = (product: Product) => {
+    const isInCart = cartItems.some(item => item.id === product.id);
+    
+    if (!isInCart) {
+      addToCart(product);
+      setJustAdded(product.id);
+      
+      // Reset the "just added" state after 1.5 seconds
+      setTimeout(() => {
+        setJustAdded(null);
+      }, 1500);
+    }
+  };
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
       <div className="text-center space-y-2">
@@ -72,9 +90,20 @@ export const ProductRecommendations = ({ products }: ProductRecommendationsProps
                 {/* <div>
                   <p className="text-2xl font-bold">${product.price}</p>
                 </div> */}
-                <Button size="sm" className="group/btn">
+                <Button 
+                  size="sm" 
+                  className="group/btn"
+                  onClick={() => handleAddToCart(product)}
+                  disabled={cartItems.some(item => item.id === product.id)}
+                  variant={justAdded === product.id ? "default" : "default"}
+                >
                   <ShoppingCart className="mr-2 h-4 w-4 group-hover/btn:scale-110 transition-transform" />
-                  Add to Cart
+                  {justAdded === product.id 
+                    ? "✓ Added!" 
+                    : cartItems.some(item => item.id === product.id)
+                    ? "In Cart"
+                    : "Add to Cart"
+                  }
                 </Button>
               </div>
             </div>

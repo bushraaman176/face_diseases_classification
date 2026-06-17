@@ -612,7 +612,11 @@ export default function SkinConditionDetail() {
               <p className="text-foreground">{data.duration}</p>
             </div>
 
-            <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" size="lg">
+            <Button
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+              size="lg"
+              onClick={() => navigate('/?start=upload')}
+            >
               Start Analysis
             </Button>
           </div>

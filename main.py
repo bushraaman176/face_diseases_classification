@@ -56,7 +56,7 @@ async def load_model():
     
     # Load Model
     try:
-        model = tf.keras.models.load_model("backend/best_head_only.h5")
+        model = tf.keras.models.load_model("backend/best_model_new.h5",compile=False)
         print("✅ Model loaded successfully!")
     except Exception as e:
         print(f"❌ Error loading model: {e}")

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, Home, BookOpen, Mail, LogOut, User } from 'lucide-react';
+import { Menu, X, Home, BookOpen, Mail, LogOut, User, ShoppingCart, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from '@/contexts/CartContext';
+import { CartModal } from './CartModal';
 
 interface UserData {
   id: string;
@@ -11,8 +13,10 @@ interface UserData {
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const navigate = useNavigate();
+  const { cartCount } = useCart();
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -31,9 +35,11 @@ export function Navigation() {
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
     { label: 'Skin Guide', href: '/guide', icon: BookOpen },
+    { label: 'Skincare Tips', href: '/tips', icon: Sparkles },
   ];
 
   return (
+    <>
     <nav className="sticky top-0 z-50 w-full backdrop-blur-sm border-b border-border">
       {/* Background - using design system colors */}
       <div className="absolute inset-0 bg-background -z-10" />
@@ -76,6 +82,22 @@ export function Navigation() {
 
           {/* Desktop CTA Button */}
           <div className="hidden md:flex items-center gap-4">
+            {/* Cart Icon */}
+            <div className="relative">
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="relative p-2 hover:bg-accent rounded-lg transition-colors"
+                aria-label="Open shopping cart"
+              >
+                <ShoppingCart className="w-5 h-5 text-foreground hover:text-primary transition-colors" />
+              </button>
+              {cartCount > 0 && (
+                <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </div>
+              )}
+            </div>
+
             {user ? (
               <>
                 <div className="flex items-center gap-2 text-sm">
@@ -169,5 +191,7 @@ export function Navigation() {
       {/* Subtle decorative line */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
     </nav>
+    <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+    </>
   );
 }
